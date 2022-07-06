@@ -27,9 +27,9 @@ contract urlShortener{
     // generate a short URL using SHA256 hashig algorithm
     function hashUrl(string memory _url) internal pure returns(bytes memory){
         bytes32 hash = sha256(abi.encodePacked(_url)); // hash url using sha hashing algorithm
-        uint shiftBy = 15; // shift bits by
+        uint shiftBy = 100; // shift bits by
         bytes32 mask = 0xffffff0000000000000000000000000000000000000000000000000000000000; // hex value to act as the mask
-        return abi.encodePacked(bytes3(hash << (shiftBy * 6) & mask));
+        return abi.encodePacked(bytes3(hash << (shiftBy) & mask));
     }
 
     // shortens url and maps it to user
@@ -47,8 +47,6 @@ contract urlShortener{
 
             emit notify(_url, shortenedHash, msg.sender); // amit a notification that we can listen on the frontend side
         }
-
-        // return shortenUrlWithSlug(_url, shortenedHash, _paid||initialPaid); // return the shortened url
     }
 
     // OTHER FUNCTIONS
