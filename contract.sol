@@ -23,36 +23,32 @@ contract urlShortener{
     }
 
     // URL SHORTENER LOGIC
+    
+    // generate a short URL using SHA256 hashig algorithm
+    function hashUrl(string memory _url) internal pure returns(bytes memory){
+        bytes32 hash = sha256(abi.encodePacked(_url)); // hash url using sha hashing algorithm
+        uint shiftBy = 15; // shift bits by
+        bytes32 mask = 0xffffff0000000000000000000000000000000000000000000000000000000000; // hex value to act as the mask
+        return abi.encodePacked(bytes3(hash << (shiftBy * 6) & mask));
+    }
 
-    // for person to specify the shortened version of a url
-    function shortenUrlWithSlug(string memory _url, bytes memory _short, bool paid) public payable{ // payable - receive ether
-        bool initialPaid = false; // default paid - user not yet paid
+    // shortens url and maps it to user
+    function shortenUrl(string memory _url, bool _paid) public payable{
+        bool initialPaid = false; // user has not yet paid initially
+        bytes memory shortenedHash = hashUrl(_url); // this is the shortened url
 
-        if(!table[_short].exists){ // check is shortened url is already in table
-            table[_short] = urlStruct(msg.sender, _url, true, paid||initialPaid); // add url to table of mappings
-            shortenedUrls[msg.sender].push(_short); // adding the shortened url to the list of urls a person has shortened before
+        if(!table[shortenedHash].exists){ // check is shortened url is already in table
+            table[shortenedHash] = urlStruct(msg.sender, _url, true, _paid||initialPaid); // add url to table of mappings
+            shortenedUrls[msg.sender].push(shortenedHash); // adding the shortened url to the list of urls a person has shortened before
 
-            if(shortenedUrls[msg.sender].length < 1){ // check if it is the first time for a person to shorten an array
+            if(shortenedUrls[msg.sender].length <= 1){ // check if it is the first time for a person to shorten an array
                 accounts.push(msg.sender); // if so we add him/her to a list of users who interact with this contract
             }
 
-            emit notify(_url, _short, msg.sender); // amit a notification that we can listen on the frontend side
+            emit notify(_url, shortenedHash, msg.sender); // amit a notification that we can listen on the frontend side
         }
-    }
 
-    // generate a short URL
-    function getShortSlug(string memory _url) internal pure returns(bytes memory){
-        bytes32 hash = sha256(abi.encodePacked(_url)); // hash url using sha hashing algorithm
-        uint shiftBy = 15 * 6; // shift bits by
-        bytes32 mask = 0xffffff0000000000000000000000000000000000000000000000000000000000; // hex value to act as the mask
-        return abi.encodePacked(bytes32(hash << (shiftBy) & mask));
-    }
-
-    // shortens url using getShortSlug, here user does not specify the short version of the url
-    function shortenUrl(string memory _url, bool _paid) public payable{
-        bool initialPaid = false; // user has not yet paid initially
-        bytes memory shortenedHash = getShortSlug(_url); // this is the shortened url
-        return shortenUrlWithSlug(_url, shortenedHash, _paid||initialPaid); // return the shortened url
+        // return shortenUrlWithSlug(_url, shortenedHash, _paid||initialPaid); // return the shortened url
     }
 
     // OTHER FUNCTIONS
