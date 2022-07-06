@@ -4,7 +4,7 @@ pragma solidity ^0.6.0 < 0.9.0;
 
 contract urlShortener{
     struct urlStruct{
-        address owner; // address of person shortening a url
+        address admin; // address of person shortening a url
         string url;    // the long complex url to be shortened
         bool exists;   // true if shortened url is present, false otherwise
         bool paid;     // true if the person paid for the transaction, false otherwise
